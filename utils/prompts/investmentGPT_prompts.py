@@ -1,3 +1,15 @@
+InvestmentGPT_welcome_prompt = """
+# InvestmentGPT
+        
+Welcome to InvestmentGPT.
+
+InvestmentGPT assists you in deciding whether to invest in a stock based on your desired profit and the expected duration.
+
+InvestmentGPT analyzes the company's overview, income statement, and stock performance to provide a comprehensive recommendation.
+
+<span style="color:red; font-weight:bold;">[Disclaimer] The results provided by this agent are for informational purposes only and may be incorrect. Investing in stocks involves risk, and it is the user's responsibility to conduct their own research and make their own investment decisions. The creators of InvestmentGPT are not liable for any financial losses that may occur.</span>
+"""
+
 investment_main_prompt = """
 You are a hedge fund manager.
 

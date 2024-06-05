@@ -12,6 +12,7 @@ class CompanyIncomeStatementTool(BaseTool):
     args_schema: Type[CompanyOverviewArgsSchema] = CompanyOverviewArgsSchema
 
     def __init__(self, alpha_vantage_api_key: str):
+        super().__init__()
         self.alpha_vantage_api_key = alpha_vantage_api_key
 
     def _run(self, symbol):
@@ -20,8 +21,20 @@ class CompanyIncomeStatementTool(BaseTool):
         )
         income_statement = r.json()
 
-        # Only look for most recent 3 years & 8 quarters
-        income_statement['annualReports'] = income_statement['annualReports'][:3]
-        income_statement['quarterlyReports'] = income_statement['quarterlyReports'][:8]
+        # Only look at these categories
+        income_categories = [
+            "fiscalDateEnding", "reportedCurrency",
+            'totalRevenue', 'grossProfit', 'operatingIncome', 'netIncome',
+            'operatingExpenses', 'researchAndDevelopment', 'EBITDA',
+            'incomeBeforeTax', 'incomeTaxExpense', 'comprehensiveIncomeNetOfTax'
+        ]
 
+        # Only look for most recent 3 years & 8 quarters
+        def filter_reports(reports, categories, limit):
+            return [{k: v for k, v in report.items() if k in categories} for report in reports[:limit]]
+
+        # Filter the annual and quarterly reports
+        income_statement['annualReports'] = filter_reports(income_statement['annualReports'], income_categories, 3)
+        income_statement['quarterlyReports'] = filter_reports(income_statement['quarterlyReports'], income_categories, 8)
+        
         return income_statement

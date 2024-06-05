@@ -6,7 +6,7 @@ from utils.StockMarketSymbolSearchTool import StockMarketSymbolSearchTool
 from utils.CompanyOverviewTool import CompanyOverviewTool
 from utils.CompanyIncomeStatementTool import CompanyIncomeStatementTool
 from utils.CompanyStockPerformanceTool import CompanyStockPerformanceTool
-from utils.prompts.investment_main_prompt import investment_main_prompt
+from utils.prompts.investmentGPT_prompts import investment_main_prompt, InvestmentGPT_welcome_prompt
 
 llm = ChatOpenAI(temperature=0.1, model_name="gpt-3.5-turbo-1106")
 
@@ -16,28 +16,33 @@ st.set_page_config(
 )
 
 st.markdown(
-    """
-    # InvestmentGPT
-            
-    Welcome to InvestmentGPT.
-            
-    Write down the name of a company, your desired profit within a certain duration and our Agent will determine whether to buy the stock to satisfy your needs.
-
-    <span style="color:red; font-weight:bold;">[Disclaimer] The results provided by this agent are for informational purposes only and may be incorrect. Investing in stocks involves risk, and it is the user's responsibility to conduct their own research and make their own investment decisions. The creators of InvestmentGPT are not liable for any financial losses that may occur.</span>
-    """,
+    InvestmentGPT_welcome_prompt,
     unsafe_allow_html=True
 )
 
 with st.sidebar:
+    openai_key_exists = "openai_api_key" in st.session_state.keys()
     openai_api_key = st.text_input(
         "Enter your OpenAI API key:",
         placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        value= "" if not openai_key_exists else st.session_state["openai_api_key"]
     )
+
+    alpha_vantage_api_key_exists = "alpha_vantage_api_key" in st.session_state.keys()
     alpha_vantage_api_key = st.text_input(
         "Enter your Alpha Vantage API key:",
         placeholder="XXXXXXXXXXXXXXXX",
+        value= "" if not alpha_vantage_api_key_exists else st.session_state["alpha_vantage_api_key"]
     )
 
+
+if openai_api_key:
+    st.session_state["openai_api_key"] = openai_api_key
+
+if alpha_vantage_api_key:
+    st.session_state["alpha_vantage_api_key"] = alpha_vantage_api_key
+
+# Investment info
 company = st.text_input("Write the name of the company you are interested in.")
 desired_profit = st.number_input("Enter your expected profit (%):", min_value=0.0, step=0.1)
 desired_duration_in_months = st.number_input("Enter the expected duration (in months):", min_value=0.25, max_value=120.0, step=0.25)
@@ -59,9 +64,9 @@ if st.button("Submit"):
             handle_parsing_errors=True,
             tools=[
                 StockMarketSymbolSearchTool(),
-                CompanyOverviewTool(alpha_vantage_api_key),
-                CompanyIncomeStatementTool(alpha_vantage_api_key),
-                CompanyStockPerformanceTool(alpha_vantage_api_key),
+                CompanyOverviewTool(alpha_vantage_api_key=alpha_vantage_api_key),
+                CompanyIncomeStatementTool(alpha_vantage_api_key=alpha_vantage_api_key),
+                CompanyStockPerformanceTool(alpha_vantage_api_key=alpha_vantage_api_key),
             ],
             agent_kwargs={
                 "system_message": SystemMessage(content=investment_main_prompt)
