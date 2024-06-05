@@ -12,10 +12,8 @@ from utils.CompanyOverviewArgsSchema import CompanyOverviewArgsSchema
 from utils.StockMarketSymbolSearchTool import StockMarketSymbolSearchTool
 from utils.StockMarketSymbolSearchToolArgsSchema import StockMarketSymbolSearchToolArgsSchema
 
+
 llm = ChatOpenAI(temperature=0.1, model_name="gpt-3.5-turbo-1106")
-
-alpha_vantage_api_key = os.environ.get("ALPHA_VANTAGE_API_KEY")
-
 
 class CompanyOverviewTool(BaseTool):
     name = "CompanyOverview"
@@ -143,12 +141,22 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+with st.sidebar:
+    openai_api_key = st.text_input(
+        "Enter your OpenAI API key:",
+        placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    )
+    alpha_vantage_api_key = st.text_input(
+        "Enter your Alpha Vantage API key:",
+        placeholder="XXXXXXXXXXXXXXXX",
+    )
+
 company = st.text_input("Write the name of the company you are interested in.")
 desired_profit = st.number_input("Enter your expected profit (%):", min_value=0.0, step=0.1)
 desired_duration_in_months = st.number_input("Enter the expected duration (in months):", min_value=0.25, max_value=120.0, step=0.25)
 
 if st.button("Submit"):
-    if company and desired_profit and desired_duration_in_months:
+    if company and desired_profit and desired_duration_in_months and openai_api_key and alpha_vantage_api_key:
         query = {
             "input": {
                 "company": company,
@@ -158,3 +166,13 @@ if st.button("Submit"):
         }
         result = agent.invoke(query)
         st.write(result["output"].replace("$", "\$"))
+    elif not openai_api_key: 
+        with st.sidebar:
+            # st.error("Please provide OpenAI key to receive investment decision.")
+            url = "https://www.example.com"
+            error_message = f"Please provide [OpenAI key]({url}) to receive an investment decision."
+            st.error(error_message)
+
+    elif not alpha_vantage_api_key: 
+        with st.sidebar:
+            st.error("Please provide Alpha Vantage API key to receive investment decision.")
