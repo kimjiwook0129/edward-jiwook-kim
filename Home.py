@@ -32,6 +32,7 @@ question_to_agent = st.chat_input(
 )
 
 with st.sidebar:
+    
     openai_api_key = st.text_input(
         "Enter your OpenAI API Key to chat with my agent.",
         placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -43,21 +44,14 @@ with st.sidebar:
 if question_to_agent:
     print_message_history()
     if openai_api_key:
-        # llm = ChatOpenAI(
-        #     temperature=0.1,
-        #     streaming=True,
-        #     api_key=openai_api_key,
-        #     callbacks =[ChatCallbackHandler()]
-        # )
-        from langchain.chat_models import ChatOllama
-        llm = ChatOllama(
-            model="mistral:latest",
+        llm = ChatOpenAI(
             temperature=0.1,
+            model_name="gpt-3.5-turbo-1106",
             streaming=True,
-            callbacks =[
-                ChatCallbackHandler(),
-            ]
+            api_key=openai_api_key,
+            callbacks =[ChatCallbackHandler()]
         )
+            
 
         # Write doc related to Edward
         # Put embeddings in .cache FAISS vectorstore
@@ -76,4 +70,8 @@ if question_to_agent:
             st.error("Please provide OpenAI Key to chat.")
 
 else:
-    st.session_state["messages"] = []
+    
+    if "messages" in st.session_state.keys():
+        print_message_history()
+    else:
+        st.session_state["messages"] = []
