@@ -8,7 +8,6 @@ st.set_page_config(
     page_title = "Edward Jiwook Kim",
     page_icon = "👋"
 )
-
 st.title("Hi, I'm Edward Kim 👋")
 st.markdown("""""")
 
@@ -19,8 +18,6 @@ prompt = ChatPromptTemplate.from_messages([
      
      If you don't know the answer, or the question sounds not relevant to "Edward Jiwook Kim",
      just say you don't know. Don't make anything up.
-     
-     
      """
      # Context: {context}
     ),
@@ -28,18 +25,22 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 question_to_agent = st.chat_input(
-    "Do you have any question about me? (e.g. What are Edward's hobbies?)"
+    "Do you have any question about me? (e.g. What are Edward's hobbies?)",
 )
 
 with st.sidebar:
-    
+    openai_key_exists = "openai_api_key" in st.session_state.keys()
     openai_api_key = st.text_input(
         "Enter your OpenAI API Key to chat with my agent.",
         placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        value= "" if not openai_key_exists else st.session_state["openai_api_key"]
     )
+    if st.button("Reset Chat"):
+        st.session_state["messages"] = []
+        print_message_history()
 
-# Message history keep deleting when api key changes or deleted
-    # -> should remain the same
+if openai_api_key:
+    st.session_state["openai_api_key"] = openai_api_key
 
 if question_to_agent:
     print_message_history()
@@ -62,9 +63,12 @@ if question_to_agent:
             # "context": retriever | RunnableLambda(format_docs),
             "question": RunnablePassthrough()
         } | prompt | llm
-
-        with st.chat_message("ai"):
-            response = chain.invoke(question_to_agent)
+        try:
+            with st.chat_message("ai"):
+                response = chain.invoke(question_to_agent)
+        except:
+            error_message = "Please provide a correct OpenAI API key."
+            send_message(error_message, 'ai')
     else:
         with st.sidebar:
             st.error("Please provide OpenAI Key to chat.")

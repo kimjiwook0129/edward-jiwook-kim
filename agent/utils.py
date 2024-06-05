@@ -2,6 +2,8 @@ import streamlit as st
 from langchain.callbacks.base import BaseCallbackHandler
 
 def save_message(message, role):
+    if not "messages" in st.session_state.keys():
+        st.session_state["messages"] = []
     st.session_state["messages"].append({"message": message, "role": role})
 
 def send_message(message, role, save = True):
@@ -32,3 +34,5 @@ class ChatCallbackHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token, *args, **kwargs):
         self.message += token
         self.message_box.markdown(self.message)
+
+        
