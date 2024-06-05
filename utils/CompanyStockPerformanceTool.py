@@ -1,6 +1,7 @@
 import requests
 from langchain.tools import BaseTool
 from typing import Type
+from pydantic import Field
 from utils.CompanyOverviewArgsSchema import CompanyOverviewArgsSchema
 
 class CompanyStockPerformanceTool(BaseTool):
@@ -10,10 +11,7 @@ class CompanyStockPerformanceTool(BaseTool):
     You should enter a stock symbol.
     """
     args_schema: Type[CompanyOverviewArgsSchema] = CompanyOverviewArgsSchema
-
-    def __init__(self, alpha_vantage_api_key: str):
-        super().__init__()
-        self.alpha_vantage_api_key = alpha_vantage_api_key
+    alpha_vantage_api_key: str = Field(..., exclude=True)
 
     def _run(self, symbol):
         r = requests.get(
