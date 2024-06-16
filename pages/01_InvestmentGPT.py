@@ -8,7 +8,6 @@ from utils.CompanyIncomeStatementTool import CompanyIncomeStatementTool
 from utils.CompanyStockPerformanceTool import CompanyStockPerformanceTool
 from utils.prompts.investmentGPT_prompts import investment_main_prompt, InvestmentGPT_welcome_prompt
 
-llm = ChatOpenAI(temperature=0.1, model_name="gpt-3.5-turbo-1106")
 
 st.set_page_config(
     page_title="InvestmentGPT",
@@ -56,6 +55,12 @@ if st.button("Submit"):
                 "desired_duration_in_months": desired_duration_in_months
             }
         }
+        llm = ChatOpenAI(
+            temperature=0.1, 
+            model_name="gpt-3.5-turbo-1106",
+            streaming=True,
+            api_key=openai_api_key
+        )
 
         agent = initialize_agent(
             llm=llm,
