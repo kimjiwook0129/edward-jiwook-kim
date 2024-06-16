@@ -3,6 +3,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from agent.utils import print_message_history, send_message, ChatCallbackHandler
+from utils.models import openai_models
 
 st.set_page_config(
     page_title = "Edward Jiwook Kim",
@@ -11,16 +12,22 @@ st.set_page_config(
 st.title("Hi, I'm Edward Kim 👋")
 st.markdown("""""")
 
+
 prompt = ChatPromptTemplate.from_messages([
     ("system", """
-     You are a friendly chat agent who answers to questions about a person named "Edward Jiwook Kim".
-     Answer the question using only the following context.
-     
-     If you don't know the answer, or the question sounds not relevant to "Edward Jiwook Kim",
-     just say you don't know. Don't make anything up.
+     For now, this functinality is being developed, just say this feature is being develped whatever the user asks.
      """
-     # Context: {context}
     ),
+    # ("system", """
+     
+    #  You are a friendly chat agent who answers to questions about a person named "Edward Jiwook Kim".
+    #  Answer the question using only the following context.
+     
+    #  If you don't know the answer, or the question sounds not relevant to "Edward Jiwook Kim",
+    #  just say you don't know. Don't make anything up.
+    #  """
+    #  # Context: {context}
+    # ),
     ("human", "{question}"),
 ])
 
@@ -29,16 +36,32 @@ question_to_agent = st.chat_input(
 )
 
 with st.sidebar:
+
+    # Model selection
+    openai_model_exists = "openai_model" in st.session_state.keys()
+    default_model = openai_models[0] if not openai_model_exists else st.session_state["openai_model"]
+    model_index = openai_models.index(default_model)
+    openai_model = st.sidebar.selectbox(
+        "Which model would you like to use?",
+        openai_models,
+        index = model_index
+    )
+
+    # Receive user's OpenAI API key
     openai_key_exists = "openai_api_key" in st.session_state.keys()
     openai_api_key = st.text_input(
         "Enter your OpenAI API Key to chat with my agent.",
         placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         value= "" if not openai_key_exists else st.session_state["openai_api_key"]
     )
+
     if st.button("Reset Chat"):
         st.session_state["messages"] = []
         print_message_history()
 
+# Update Session State if user updates the values
+if openai_model:
+    st.session_state["openai_model"] = openai_model
 if openai_api_key:
     st.session_state["openai_api_key"] = openai_api_key
 
@@ -47,7 +70,7 @@ if question_to_agent:
     if openai_api_key:
         llm = ChatOpenAI(
             temperature=0.1,
-            model_name="gpt-3.5-turbo-1106",
+            model_name=openai_model,
             streaming=True,
             api_key=openai_api_key,
             callbacks =[ChatCallbackHandler()]

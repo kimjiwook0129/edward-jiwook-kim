@@ -2,11 +2,12 @@ from langchain.schema import SystemMessage
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
 from langchain.agents import initialize_agent, AgentType
-from utils.StockMarketSymbolSearchTool import StockMarketSymbolSearchTool
-from utils.CompanyOverviewTool import CompanyOverviewTool
-from utils.CompanyIncomeStatementTool import CompanyIncomeStatementTool
-from utils.CompanyStockPerformanceTool import CompanyStockPerformanceTool
-from utils.prompts.investmentGPT_prompts import investment_main_prompt, InvestmentGPT_welcome_prompt
+from utils.investmentGPT.StockMarketSymbolSearchTool import StockMarketSymbolSearchTool
+from utils.investmentGPT.CompanyOverviewTool import CompanyOverviewTool
+from utils.investmentGPT.CompanyIncomeStatementTool import CompanyIncomeStatementTool
+from utils.investmentGPT.CompanyStockPerformanceTool import CompanyStockPerformanceTool
+from utils.investmentGPT.investmentGPT_prompts import investment_main_prompt, InvestmentGPT_welcome_prompt
+from utils.models import openai_models
 
 
 st.set_page_config(
@@ -20,6 +21,14 @@ st.markdown(
 )
 
 with st.sidebar:
+    openai_model_exists = "openai_model" in st.session_state.keys()
+    default_model = openai_models[0] if not openai_model_exists else st.session_state["openai_model"]
+    model_index = openai_models.index(default_model)
+    openai_model = st.sidebar.selectbox(
+        "Which model would you like to use?",
+        openai_models,
+        index = model_index
+    )
     openai_key_exists = "openai_api_key" in st.session_state.keys()
     openai_api_key = st.text_input(
         "Enter your OpenAI API key:",
@@ -35,9 +44,11 @@ with st.sidebar:
     )
 
 
+# Update Session State if user updates the values
+if openai_model:
+    st.session_state["openai_model"] = openai_model
 if openai_api_key:
     st.session_state["openai_api_key"] = openai_api_key
-
 if alpha_vantage_api_key:
     st.session_state["alpha_vantage_api_key"] = alpha_vantage_api_key
 
@@ -57,9 +68,9 @@ if st.button("Submit"):
         }
         llm = ChatOpenAI(
             temperature=0.1, 
-            model_name="gpt-3.5-turbo-1106",
+            model_name=openai_model,
             streaming=True,
-            api_key=openai_api_key
+            api_key=openai_api_key,
         )
 
         agent = initialize_agent(
@@ -98,3 +109,4 @@ if st.button("Submit"):
                 Create your Alpha Vantage API key for free: [Alpha Vantage]({url})
                 """
             st.error(error_message)
+

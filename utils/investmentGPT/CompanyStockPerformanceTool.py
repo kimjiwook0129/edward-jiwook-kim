@@ -2,7 +2,7 @@ import requests
 from langchain.tools import BaseTool
 from typing import Type
 from pydantic import Field
-from utils.CompanyOverviewArgsSchema import CompanyOverviewArgsSchema
+from utils.investmentGPT.CompanyOverviewArgsSchema import CompanyOverviewArgsSchema
 
 class CompanyStockPerformanceTool(BaseTool):
     name = "CompanyStockPerformance"

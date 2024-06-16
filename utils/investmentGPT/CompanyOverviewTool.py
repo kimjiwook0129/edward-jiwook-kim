@@ -3,7 +3,7 @@ from typing import Type
 from datetime import date
 from langchain.tools import BaseTool
 from pydantic import Field
-from utils.CompanyOverviewArgsSchema import CompanyOverviewArgsSchema
+from utils.investmentGPT.CompanyOverviewArgsSchema import CompanyOverviewArgsSchema
 
 class CompanyOverviewTool(BaseTool):
     name = "CompanyOverview"
